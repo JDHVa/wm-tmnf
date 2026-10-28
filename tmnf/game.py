@@ -2,9 +2,10 @@ import socket
 import time
 
 from .episode import prepare_client
-from .launcher import find_a01, launch_instance, port_is_listening, restore_windows, wait_for_port
+from .launcher import dismiss_offline_dialog, find_a01, focus_window, launch_instance, port_is_listening, restore_windows, wait_for_port
 
 STEP_TIMEOUT_S = 30
+FRESH_CONNECT_TIMEOUT_S = 120
 MAX_RETRIES = 2
 
 
@@ -36,12 +37,25 @@ def kill_listener(port, log=print):
 
 def start_if_needed(port, timeout_s, log=print):
     if port_is_listening(port):
-        return
+        return False
     log(f"  [{port}] puerto cerrado, lanzando instancia...")
     launch_instance(port)
     if not wait_for_port(port, timeout=timeout_s):
         raise TimeoutError(f"El puerto {port} no abrio en {timeout_s}s")
     time.sleep(3.0)
+    return True
+
+
+def bring_up_ui(port, log=print, settle_s=12.0, timeout_s=90.0):
+    t0 = time.time()
+    while time.time() - t0 < timeout_s:
+        pid = listener_pid(port)
+        if pid is not None and dismiss_offline_dialog([pid]):
+            log(f"  [{port}] dialogo y perfil resueltos")
+            time.sleep(settle_s)
+            return True
+        time.sleep(2.0)
+    return False
 
 
 def ensure_game(port, map_path=None, timeout_s=180, log=print):
@@ -50,11 +64,14 @@ def ensure_game(port, map_path=None, timeout_s=180, log=print):
     last = None
     for attempt in range(MAX_RETRIES + 1):
         remaining = max(30.0, timeout_s - (time.time() - t0))
-        start_if_needed(port, remaining, log)
+        fresh = start_if_needed(port, remaining, log)
         restore_windows()
+        if fresh:
+            bring_up_ui(port, log)
+        focus_window()
         try:
             return prepare_client(port, map_path, log=log, step_timeout_s=STEP_TIMEOUT_S,
-                                  connect_timeout_s=STEP_TIMEOUT_S)
+                                  connect_timeout_s=FRESH_CONNECT_TIMEOUT_S if fresh else STEP_TIMEOUT_S)
         except (socket.timeout, TimeoutError, ConnectionError, OSError) as e:
             last = e
             log(f"  [{port}] intento {attempt + 1} fallo: {type(e).__name__}: {e}")

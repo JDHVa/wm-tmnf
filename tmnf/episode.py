@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 
-from .launcher import load_map, restore_windows
+from .launcher import GAME_SETTINGS, load_map, restore_windows
 from .tmi_client import TMIClient
 
 POS_TOL = 1e-3
@@ -41,14 +41,14 @@ def prepare_client(port, map_path, timeout_ms=300000, log=print, step_timeout_s=
 def _prepare(c, port, map_path, timeout_ms, log, step_timeout_s):
     c.set_timeout(timeout_ms)
     c.set_on_step_period(10)
+    for cmd in GAME_SETTINGS:
+        c.execute_command(cmd)
     if c.is_in_menus():
         log(f"  [{port}] en menus, cargando mapa...")
         load_map(c, map_path)
-    if step_timeout_s is not None:
-        c.sock.settimeout(step_timeout_s)
+    c.sock.settimeout(step_timeout_s if step_timeout_s is not None else 60)
     reach_start(c)
-    if step_timeout_s is not None:
-        c.sock.settimeout(None)
+    c.sock.settimeout(None)
     c.set_input()
     return c, c.get_state()
 
