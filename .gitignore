@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+runs/
+third_party/
+CLAUDE_dont_read_it.md
+virustotal.png
+*.ckpt
+*.pt
+.vscode/
+.idea/
