@@ -56,6 +56,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--port", type=int, default=8479)
     p.add_argument("--game-speed", type=float, default=5.0)
+    p.add_argument("--fail-penalty", type=float, default=10.0)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--steps", type=float, default=1e6)
     p.add_argument("--logdir", type=str, default=None)
@@ -76,7 +77,7 @@ def main():
     config.eval_every = int(config.eval_every)
     config.log_every = int(config.log_every)
     with open(logdir / "config.json", "w") as f:
-        json.dump({**vars(config), "port": args.port, "game_speed": args.game_speed, "cmdline": sys.argv}, f, indent=1, default=str)
+        json.dump({**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cmdline": sys.argv}, f, indent=1, default=str)
 
     step0 = dreamer_mod.count_steps(config.traindir)
     logger = tools.Logger(logdir, config.action_repeat * step0)
@@ -118,7 +119,7 @@ def main():
         logger.scalar("ep/grad_steps", row["grad_steps"])
         logger.scalar("ep/finished", 1.0 if finished else 0.0)
 
-    env = DreamerTMNF(port=args.port, time_limit=config.time_limit, on_episode=on_episode, speed=args.game_speed)
+    env = DreamerTMNF(port=args.port, time_limit=config.time_limit, on_episode=on_episode, speed=args.game_speed, fail_penalty=args.fail_penalty)
     train_envs = [Damy(env)]
     config.num_actions = env.action_space.shape[0]
 

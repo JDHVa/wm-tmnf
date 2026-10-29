@@ -21,7 +21,7 @@ tmnf:
   units: 512
   encoder: {mlp_keys: 'vector', cnn_keys: 'image', cnn_depth: 32, mlp_layers: 2, mlp_units: 256}
   decoder: {mlp_keys: 'vector', cnn_keys: 'image', cnn_depth: 32, mlp_layers: 2, mlp_units: 256}
-  actor: {layers: 2, dist: 'onehot', std: 'none'}
+  actor: {layers: 2, dist: 'onehot', std: 'none', entropy: 3e-3}
   imag_gradient: 'reinforce'
   batch_size: 16
   batch_length: 64
