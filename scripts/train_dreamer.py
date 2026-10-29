@@ -22,6 +22,9 @@ import tools
 from parallel import Damy
 
 from dreamer_tmnf.wrapper import DreamerTMNF
+from dreamer_tmnf import tb_video
+
+tb_video.install()
 
 CSV_FIELDS = ["episode", "total_env_steps", "sim_hours", "wall_hours", "grad_steps",
               "ep_return", "ep_len", "progress_m", "reason", "lap_time_s", "max_vram_gb"]
