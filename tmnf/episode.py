@@ -22,6 +22,11 @@ def vec_diff(a, b):
 
 def reach_start(c):
     t = c.wait_step()
+    if t > 0:
+        c.give_up()
+        t = c.wait_step()
+        while t > 0:
+            t = c.wait_step()
     while t < 0:
         t = c.wait_step()
     return t

@@ -192,6 +192,13 @@ class TMIClient:
                 self._respond(msg)
             else:
                 self._handle_other(msg)
+        while True:
+            msg = self._read_int()
+            if msg == MsgType.SC_RUN_STEP_SYNC:
+                self.pending_t = self._read_int()
+                self._pending = msg
+                break
+            self._handle_other(msg)
         self.last_frame = frame
         return frame
 

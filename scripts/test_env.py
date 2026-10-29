@@ -137,7 +137,7 @@ def main():
     ap.add_argument("--skip-check", action="store_true")
     ap.add_argument("--fwd-axis", type=int, default=2)
     ap.add_argument("--lat-axis", type=int, default=0)
-    ap.add_argument("--lat-sign", type=float, default=1.0)
+    ap.add_argument("--lat-sign", type=float, default=-1.0)
     ap.add_argument("--target-k", type=int, default=2)
     ap.add_argument("--deadzone", type=float, default=0.05)
     ap.add_argument("--max-speed", type=float, default=400.0)
