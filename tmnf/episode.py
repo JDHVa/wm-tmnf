@@ -52,6 +52,7 @@ def _prepare(c, port, map_path, timeout_ms, log, step_timeout_s):
         log(f"  [{port}] en menus, cargando mapa...")
         load_map(c, map_path)
     c.sock.settimeout(step_timeout_s if step_timeout_s is not None else 60)
+    c.set_speed(1)
     reach_start(c)
     c.sock.settimeout(None)
     c.set_input()

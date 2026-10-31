@@ -2,6 +2,8 @@
 // trackmania_rl/tmi_interaction/Python_Link.as, author "Agade"; setup.py declares MIT license).
 // Only change vs. original: if `custom_port` is not set (0), listen on DEFAULT_PORT (8478)
 // so the plugin works when loaded without a TMLoader /configstring. Protocol is unchanged.
+// Also: WaitForResponse keeps accepting new connections while it waits, so if the Python client
+// dies the new client replaces it immediately instead of the game staying deaf until the timeout.
 const uint16 DEFAULT_PORT = 8478;
 Net::Socket@ sock = null;
 Net::Socket@ clientSock = null;
@@ -50,17 +52,57 @@ void Init_Socket(){
     }
 }
 
+void ReleaseSim(){
+    simManager.SetSpeed(1);
+    if (simManager.InRace) {
+        simManager.SetInputState(InputType::Left, 0);
+        simManager.SetInputState(InputType::Right, 0);
+        simManager.SetInputState(InputType::Up, 0);
+        simManager.SetInputState(InputType::Down, 0);
+    }
+}
+
 void close_connection(){
+    ReleaseSim();
     @clientSock = null;
     Init_Socket();
     next_frame_requested_H = -1;
     RESPONSE_TIMEOUT = 2000;
 }
 
+bool AcceptClient(){
+    if (@sock is null) {
+        return false;
+    }
+    auto @newSock = sock.Accept(0);
+    if (@newSock is null) {
+        return false;
+    }
+    if (@clientSock !is null) {
+        ReleaseSim();
+    }
+    @clientSock = @newSock;
+    newSock.NoDelay = true;
+    next_frame_requested_H = -1;
+    RESPONSE_TIMEOUT = 2000;
+    log("Client connected (IP: " + clientSock.RemoteIP + ")");
+    if(GetCurrentGameState() != TM::GameState::StartUp){
+        OnConnect();
+    }
+    else{
+        on_connect_queued = true;
+    }
+    return true;
+}
+
 void WaitForResponse(MessageType type){
     auto now = Time::Now;
+    auto last_check = now;
 
     while (true) {
+        if (@clientSock is null) {
+            break;
+        }
         auto receivedType = HandleMessage();
         if (receivedType == type) {
             break;
@@ -68,6 +110,14 @@ void WaitForResponse(MessageType type){
 
         if (receivedType == MessageType::CShutdown) {
             break;
+        }
+
+        if (receivedType == -1 && Time::Now - now > 500 && Time::Now - last_check > 250) {
+            last_check = Time::Now;
+            if (AcceptClient()) {
+                log("Client replaced by new connection");
+                break;
+            }
         }
 
         if (receivedType == -1 && Time::Now - now > RESPONSE_TIMEOUT) {
@@ -80,6 +130,9 @@ void WaitForResponse(MessageType type){
 
 int HandleMessage()
 {
+    if (@clientSock is null) {
+        return -1;
+    }
     if (clientSock.Available == 0) {
         return -1;
     }
@@ -357,19 +410,8 @@ void OnGameStateChanged(TM::GameState state){
 
 void Render(){
     //Bluescreens if you print every Render()
-    auto @newSock = sock.Accept(0);
-    if (@newSock !is null) {
-        @clientSock = @newSock;
-        newSock.NoDelay = true;
-        log("Client connected (IP: " + clientSock.RemoteIP + ")");
-        if(GetCurrentGameState() != TM::GameState::StartUp){
-            OnConnect();
-        }
-        else{
-            on_connect_queued = true;
-        }
-    }
-    if(next_frame_requested_H>=0){
+    AcceptClient();
+    if(next_frame_requested_H>=0 && @clientSock !is null){
         const auto@ frame = Graphics::CaptureScreenshot(vec2(next_frame_requested_W,next_frame_requested_H));
         clientSock.Write(MessageType::SCRequestedFrameSync);
         clientSock.Write(frame);

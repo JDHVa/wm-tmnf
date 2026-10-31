@@ -76,15 +76,31 @@ def main():
     config.evaldir.mkdir(parents=True, exist_ok=True)
     config.eval_every = int(config.eval_every)
     config.log_every = int(config.log_every)
-    with open(logdir / "config.json", "w") as f:
-        json.dump({**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cmdline": sys.argv}, f, indent=1, default=str)
+    csv_path = logdir / "episodes.csv"
+    offsets = {"episode": 0, "total_env_steps": 0, "sim_hours": 0.0, "wall_hours": 0.0, "grad_steps": 0}
+    if csv_path.exists():
+        with open(csv_path, newline="") as f:
+            last_rows = list(csv.DictReader(f))
+        if last_rows:
+            last = last_rows[-1]
+            for k in offsets:
+                v = last.get(k)
+                v = float(v) if v not in (None, "") else 0.0
+                offsets[k] = v if isinstance(offsets[k], float) else int(v)
+    print(f"Offsets de reanudacion: {offsets}", flush=True)
+    cfg_record = {**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cmdline": sys.argv}
+    if (logdir / "config.json").exists():
+        with open(logdir / "resumes.jsonl", "a") as f:
+            f.write(json.dumps({**cfg_record, "resumed_at": datetime.datetime.now().isoformat(), "offsets": offsets}, default=str) + "\n")
+    else:
+        with open(logdir / "config.json", "w") as f:
+            json.dump(cfg_record, f, indent=1, default=str)
 
     step0 = dreamer_mod.count_steps(config.traindir)
     logger = tools.Logger(logdir, config.action_repeat * step0)
     train_eps = tools.load_episodes(config.traindir, limit=config.dataset_size)
     t_start = time.time()
     holder = {"agent": None, "ep": 0}
-    csv_path = logdir / "episodes.csv"
     new = not csv_path.exists()
     csv_file = open(csv_path, "a", newline="")
     writer = csv.DictWriter(csv_file, fieldnames=CSV_FIELDS)
@@ -97,11 +113,11 @@ def main():
         agent = holder["agent"]
         finished = bool(info.get("finished"))
         row = {
-            "episode": holder["ep"],
-            "total_env_steps": info.get("total_env_steps"),
-            "sim_hours": info.get("total_sim_ms", 0) / 3.6e6,
-            "wall_hours": (time.time() - t_start) / 3600.0,
-            "grad_steps": agent._update_count if agent is not None else 0,
+            "episode": offsets["episode"] + holder["ep"],
+            "total_env_steps": offsets["total_env_steps"] + (info.get("total_env_steps") or 0),
+            "sim_hours": offsets["sim_hours"] + info.get("total_sim_ms", 0) / 3.6e6,
+            "wall_hours": offsets["wall_hours"] + (time.time() - t_start) / 3600.0,
+            "grad_steps": offsets["grad_steps"] + (agent._update_count if agent is not None else 0),
             "ep_return": ret,
             "ep_len": length,
             "progress_m": info.get("progress_m"),
@@ -154,7 +170,8 @@ def main():
         state = tools.simulate(agent, train_envs, train_eps, config.traindir, logger,
                                limit=config.dataset_size, steps=config.eval_every, state=state)
         torch.save({"agent_state_dict": agent.state_dict(),
-                    "optims_state_dict": tools.recursively_collect_optim_state_dict(agent)},
+                    "optims_state_dict": tools.recursively_collect_optim_state_dict(agent),
+                    "update_count": agent._update_count},
                    logdir / "latest.pt")
         if args.max_wall_s and time.time() - t_start > args.max_wall_s:
             break

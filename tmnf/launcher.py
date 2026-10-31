@@ -5,7 +5,7 @@ import time
 TMLOADER = os.path.join(os.path.expanduser("~"), "AppData", "Local", "TMLoader", "TMLoader.exe")
 PROFILE = "default"
 BASE_PORT = 8478
-GAME_SETTINGS = ()
+GAME_SETTINGS = ("set autologin jesus", "set skip_map_load_screens true", "set unfocused_fps_limit false", "set autorewind false")
 
 A01_CANDIDATES = [
     r"C:\Program Files (x86)\Steam\steamapps\common\TrackMania Nations Forever\GameData\Tracks\Campaigns\Nations\White\A01-Race.Challenge.Gbx",
