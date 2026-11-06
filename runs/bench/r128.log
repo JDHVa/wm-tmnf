@@ -1,0 +1,67 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+Prefill 2500
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\tools.py:747: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  self._scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+[0] ep/progress_m 0.0 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 128.0 / train_return -2.3 / train_length 128.0 / train_episodes 1.0
+[0] ep/progress_m 0.7 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 290.0 / train_return -2.6 / train_length 162.0 / train_episodes 2.0
+[0] ep/progress_m 0.1 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 405.0 / train_return -2.1 / train_length 115.0 / train_episodes 3.0
+[0] ep/progress_m 0.2 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 488.0 / train_return -1.8 / train_length 83.0 / train_episodes 4.0
+[0] ep/progress_m 0.0 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 569.0 / train_return -1.8 / train_length 81.0 / train_episodes 5.0
+[0] ep/progress_m 0.0 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 637.0 / train_return -1.7 / train_length 68.0 / train_episodes 6.0
+[0] ep/progress_m 0.0 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 741.0 / train_return -2.0 / train_length 104.0 / train_episodes 7.0
+[0] ep/progress_m 0.0 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 882.0 / train_return -2.4 / train_length 141.0 / train_episodes 8.0
+[0] ep/progress_m 2.6 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 1152.0 / train_return -3.4 / train_length 270.0 / train_episodes 9.0
+[0] ep/progress_m 1.4 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 1349.0 / train_return -2.8 / train_length 197.0 / train_episodes 10.0
+[0] ep/progress_m 0.4 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 1428.0 / train_return -1.7 / train_length 79.0 / train_episodes 11.0
+[0] ep/progress_m 0.8 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 1571.0 / train_return -2.4 / train_length 143.0 / train_episodes 12.0
+[0] ep/progress_m 1.1 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 1753.0 / train_return -2.7 / train_length 182.0 / train_episodes 13.0
+[0] ep/progress_m 0.0 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 1833.0 / train_return -1.8 / train_length 80.0 / train_episodes 14.0
+[0] ep/progress_m 0.4 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 1972.0 / train_return -2.3 / train_length 139.0 / train_episodes 15.0
+[0] ep/progress_m 1.7 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 2088.0 / train_return -2.0 / train_length 116.0 / train_episodes 16.0
+[0] ep/progress_m 1.7 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 2213.0 / train_return -2.1 / train_length 125.0 / train_episodes 17.0
+[0] ep/progress_m 1.9 / ep/sim_hours 0.0 / ep/wall_hours 0.0 / ep/grad_steps 0.0 / ep/finished 0.0 / dataset_size 2445.0 / train_return -3.1 / train_length 232.0 / train_episodes 18.0
+Encoder CNN shapes: {'image': (64, 64, 3)}
+Encoder MLP shapes: {'vector': (25,)}
+Decoder CNN shapes: {'image': (64, 64, 3)}
+Decoder MLP shapes: {'vector': (25,)}
+Optimizer model_opt has 16359580 variables.
+Optimizer actor_opt has 1055241 variables.
+Optimizer value_opt has 1181439 variables.
+Params total: 19.78M
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\models.py:116: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(self._use_amp):
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\models.py:160: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(self._use_amp):
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\models.py:299: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(self._use_amp):
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\models.py:323: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(self._use_amp):
+[2500] model_loss 620.1 / model_grad_norm 900.5 / image_loss 610.7 / vector_loss 3.5 / reward_loss 3.0 / cont_loss 0.0 / kl_free 1.0 / dyn_scale 0.5 / rep_scale 0.1 / dyn_loss 4.8 / rep_loss 4.8 / kl 4.7 / prior_ent 97.7 / post_ent 92.0 / normed_target_mean -0.0 / normed_target_std 0.0 / normed_target_min -0.1 / normed_target_max 0.0 / EMA_005 -0.0 / EMA_095 -0.0 / value_mean -0.0 / value_std 0.0 / value_min -0.0 / value_max -0.0 / target_mean -0.1 / target_std 0.0 / target_min -0.1 / target_max -0.0 / imag_reward_mean -0.0 / imag_reward_std 0.0 / imag_reward_min -0.0 / imag_reward_max -0.0 / imag_action_mean 4.0 / imag_action_std 2.3 / imag_action_min 0.0 / imag_action_max 8.0 / actor_entropy 2.0 / actor_loss -0.1 / actor_grad_norm 0.0 / value_loss 8.9 / value_grad_norm 20.1 / update_count 100.0 / fps 0.0
+add_video needs package moviepy
+Traceback (most recent call last):
+  File "C:\Users\jesus\Yo\Proyectos\mind-snn\scripts\train_dreamer.py", line 160, in <module>
+    main()
+  File "C:\Users\jesus\Yo\Proyectos\mind-snn\scripts\train_dreamer.py", line 149, in main
+    state = tools.simulate(agent, train_envs, train_eps, config.traindir, logger,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\tools.py", line 179, in simulate
+    results = [r() for r in results]
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\tools.py", line 179, in <listcomp>
+    results = [r() for r in results]
+               ^^^
+  File "C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\parallel.py", line 206, in <lambda>
+    return lambda: self._env.step(action)
+                   ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jesus\Yo\Proyectos\mind-snn\dreamer_tmnf\wrapper.py", line 44, in step
+    obs, reward, terminated, truncated, info = self._env.step(index)
+                                               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jesus\Yo\Proyectos\mind-snn\tmnf\env.py", line 155, in step
+    c.set_input(**inp)
+  File "C:\Users\jesus\Yo\Proyectos\mind-snn\tmnf\tmi_client.py", line 117, in set_input
+    self.sock.sendall(struct.pack("iBBBB", MsgType.C_SET_INPUT_STATE, left, right, accelerate, brake))
+ConnectionResetError: [WinError 10054] Se ha forzado la interrupción de una conexión existente por el host remoto
+done

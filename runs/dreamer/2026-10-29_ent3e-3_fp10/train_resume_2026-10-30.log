@@ -1,0 +1,27 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+Offsets de reanudacion: {'episode': 421, 'total_env_steps': 115331, 'sim_hours': 1.6018194444444442, 'wall_hours': 3.3917421723074384, 'grad_steps': 14115}
+Prefill 0
+Encoder CNN shapes: {'image': (64, 64, 3)}
+Encoder MLP shapes: {'vector': (25,)}
+Decoder CNN shapes: {'image': (64, 64, 3)}
+Decoder MLP shapes: {'vector': (25,)}
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\tools.py:747: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  self._scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+Optimizer model_opt has 16359580 variables.
+Optimizer actor_opt has 1055241 variables.
+Optimizer value_opt has 1181439 variables.
+Params total: 19.78M
+[8479] reconectado (1)
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\models.py:116: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(self._use_amp):
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\models.py:160: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(self._use_amp):
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\models.py:299: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(self._use_amp):
+C:\Users\jesus\Yo\Proyectos\mind-snn\third_party\dreamerv3-torch\models.py:323: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast(self._use_amp):
+[115396] model_loss 67.4 / model_grad_norm 58.8 / image_loss 57.8 / vector_loss 0.1 / reward_loss 0.5 / cont_loss 0.0 / kl_free 1.0 / dyn_scale 0.5 / rep_scale 0.1 / dyn_loss 14.9 / rep_loss 14.9 / kl 14.9 / prior_ent 45.1 / post_ent 30.0 / normed_target_mean 0.6 / normed_target_std 0.4 / normed_target_min -0.3 / normed_target_max 1.1 / EMA_005 -1.9 / EMA_095 36.8 / value_mean 22.1 / value_std 15.5 / value_min -3.3 / value_max 36.4 / target_mean 22.8 / target_std 15.9 / target_min -13.2 / target_max 39.1 / imag_reward_mean 0.1 / imag_reward_std 0.6 / imag_reward_min -9.8 / imag_reward_max 0.6 / imag_action_mean 3.9 / imag_action_std 1.2 / imag_action_min 0.0 / imag_action_max 8.0 / actor_entropy 0.3 / actor_loss 0.1 / actor_grad_norm 0.4 / value_loss 1.8 / value_grad_norm 1.2 / update_count 1.0 / fps 0.0
+[115868] ep/progress_m 664.5 / ep/sim_hours 1.6 / ep/wall_hours 3.4 / ep/grad_steps 14174.0 / ep/finished 0.0 / dataset_size 115868.0 / train_return 52.0 / train_length 472.0 / train_episodes 423.0
