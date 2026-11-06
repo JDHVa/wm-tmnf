@@ -10,7 +10,7 @@ Plan para seguir el proyecto en Linux (dual boot). Windows se queda instalado. N
   - `locales/`: `CLAUDE_dont_read_it.md` y `virustotal.png`.
   - `claude-memory/`: memoria de Claude Code.
 - **BitLocker:** `C:` y `D:` están cifrados. No hace falta tocarlos: todo se baja de GitHub y Drive. Conviene tener a mano la clave de recuperación (account.microsoft.com/devices/recoverykey).
-- **Entrenamiento:** detenido en 170 924 pasos. No se reanuda hasta arreglar la meta.
+- **Entrenamiento:** la corrida activa es `runs/dreamer/2026-11-06_cpgate`, detenida en 210 508 pasos.
 
 ## Paso 1. Preparar el sistema
 
@@ -91,25 +91,17 @@ Sin esto no conecta con el juego en Linux: `prepare_client` llama a `restore_win
 
 ## Paso 8. Retomar el trabajo pendiente
 
-En este orden, en el sistema donde funcione el juego:
+La meta ya quedó resuelta (ver `docs/resumenes/2026-11-06_05.md`): el agente se saltaba el CP2. Sigue en este orden, en el sistema donde funcione el juego:
 
-1. Correr `scripts/replay_episode.py` con el juego abierto en la A01. Nunca se ha probado contra el juego real.
-   ```bash
-   .venv/bin/python scripts/replay_episode.py --port 8479 --speed 5
-   ```
-   Si el veredicto es "H2 posible", repetir con `--no-capture`. La repetición solo vale si el juego reproduce el episodio igual: si sale "REPLAY NO FIEL" en Wine, hacerla en Windows, donde se grabó.
-2. Corregir la recompensa o la detección de meta:
-   - **H1 (faltó un checkpoint):** recompensa por checkpoint real.
-   - **H2 (bug de detección):** arreglar el manejo del evento, tomando como referencia `game_instance_manager.py` de Linesight.
-3. Registrar `cp` en `episodes.csv`.
-4. Reapertura automática del juego. Se cierra solo tras ~1–1.3 h.
-5. `ensure_game` no carga la A01: copiar el flujo de Linesight.
-6. Reanudar el entrenamiento.
+1. Ver por qué el agente se sale después del CP2, entre 1 800 y 2 100 m.
+2. Reapertura automática del juego. Se cierra solo tras ~1–1.3 h.
+3. `ensure_game` no carga la A01: copiar el flujo de Linesight.
+4. Seguir entrenando `runs/dreamer/2026-11-06_cpgate`.
 
 Mientras tanto, sin el juego se puede avanzar en las visualizaciones de los momentos 1 y 2 y en el renderer de difusión.
 
 ## Prompt para el chat nuevo
 
 ```text
-Lee CLAUDE.md, linux.md y el último resumen en docs/resumenes/2026-11-05_04.md. Me cambié a Linux (dual boot). El proyecto ya se clonó y estoy en el paso <N> de linux.md. Continúa desde ahí. No reanudes el entrenamiento hasta arreglar la meta.
+Lee CLAUDE.md, linux.md y el último resumen en docs/resumenes/2026-11-06_05.md. Me cambié a Linux (dual boot). El proyecto ya se clonó y estoy en el paso <N> de linux.md. Continúa desde ahí.
 ```

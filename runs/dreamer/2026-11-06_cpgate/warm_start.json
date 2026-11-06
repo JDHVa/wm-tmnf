@@ -8,5 +8,6 @@
   177.604
  ],
  "cp_margin": 3.0,
- "buffer_relabel": "41 episodios recortados en el primer paso con avance acumulado > 180.60 VCP, con -10 y terminal, asumiendo que ninguno tomo el CP2. Sin bono de CP retroactivo."
+ "buffer_relabel": "41 episodios recortados en el primer paso con avance acumulado > 180.60 VCP, con -10 y terminal, asumiendo que ninguno tomo el CP2. Sin bono de CP retroactivo.",
+ "buffer_relabel_nota": "La suposicion fue falsa para parte de los episodios: los primeros episodios nuevos ya tomaban el CP2."
 }
