@@ -33,7 +33,7 @@ git -C third_party/linesight checkout f6e7822
 
 ## Dónde está lo pesado
 Google Drive, en `Mi unidad/wm-tmnf-respaldo/`:
-- `runs/`: copia completa (1 421 archivos, 3.18 GB), con `latest.pt`, `train_eps` y los logs de TensorBoard.
+- `runs/`: copia completa (2 039 archivos, 5.03 GB), con `latest.pt`, `train_eps` y los logs de TensorBoard.
 - `locales/`: `CLAUDE_dont_read_it.md` y `virustotal.png`.
 - `claude-memory/`: memoria de Claude Code.
 

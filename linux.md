@@ -5,7 +5,7 @@ Plan para seguir el proyecto en Linux (dual boot). Windows se queda instalado. N
 ## Estado al salir de Windows (2026-11-06)
 
 - **GitHub (`main`):** código, plugin, `data/`, resúmenes, `scripts/replay_episode.py`, resultados, videos y los episodios 468, 471 y 484.
-- **Google Drive (`Mi unidad/wm-tmnf-respaldo/`):** 1 426 archivos, 3.18 GB.
+- **Google Drive (`Mi unidad/wm-tmnf-respaldo/`):** 2 044 archivos, 5.03 GB.
   - `runs/`: copia completa, con `latest.pt`, `train_eps` y TensorBoard.
   - `locales/`: `CLAUDE_dont_read_it.md` y `virustotal.png`.
   - `claude-memory/`: memoria de Claude Code.
@@ -38,7 +38,7 @@ rclone copy "gdrive:wm-tmnf-respaldo/runs" runs -P
 rclone copy "gdrive:wm-tmnf-respaldo/locales" . -P
 ```
 
-Comprobar que `runs/` tiene 1 421 archivos: `find runs -type f | wc -l`.
+Comprobar que `runs/` tiene 2 039 archivos: `find runs -type f | wc -l`.
 
 ## Paso 4. Crear el entorno
 
