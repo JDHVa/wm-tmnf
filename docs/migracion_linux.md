@@ -30,3 +30,14 @@ git -C third_party/linesight checkout f6e7822
 - `tmnf/launcher.py` usa `win32gui`, `win32api`, `win32process` y la ruta de `TMLoader.exe` en `AppData`.
 - TMNF, TMInterface y TMLoader son programas de Windows: en Linux hay que correrlos con Wine o Proton.
 - `config.txt` y `builtin.txt` de TMInterface están en `OneDrive/Documentos/TMInterface`.
+
+## Dónde está lo pesado
+Google Drive, en `Mi unidad/wm-tmnf-respaldo/`:
+- `runs/`: copia completa (1 421 archivos, 3.18 GB), con `latest.pt`, `train_eps` y los logs de TensorBoard.
+- `locales/`: `CLAUDE_dont_read_it.md` y `virustotal.png`.
+- `claude-memory/`: memoria de Claude Code.
+
+Para reanudar el entrenamiento, `runs/` va en la raíz del repo.
+
+## Discos de Windows
+`C:` y `D:` tienen BitLocker. Para montarlos en Linux hace falta la clave de recuperación y `dislocker` o `cryptsetup` en modo `bitlk`. El inicio rápido de Windows está apagado.
