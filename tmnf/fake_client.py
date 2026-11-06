@@ -3,9 +3,15 @@ from dataclasses import dataclass
 import numpy as np
 
 
+class _CP:
+    cp_states_length = 0
+    cp_states = ()
+
+
 class _Raw:
     def __init__(self, R):
         self.rotation_matrix = R
+        self.cp_data = _CP()
 
 
 @dataclass

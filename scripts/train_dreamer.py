@@ -27,7 +27,7 @@ from dreamer_tmnf import tb_video
 tb_video.install()
 
 CSV_FIELDS = ["episode", "total_env_steps", "sim_hours", "wall_hours", "grad_steps",
-              "ep_return", "ep_len", "progress_m", "reason", "lap_time_s", "max_vram_gb"]
+              "ep_return", "ep_len", "progress_m", "reason", "cp_passed", "lap_time_s", "max_vram_gb"]
 
 
 def load_config(remaining):
@@ -57,6 +57,7 @@ def main():
     p.add_argument("--port", type=int, default=8479)
     p.add_argument("--game-speed", type=float, default=5.0)
     p.add_argument("--fail-penalty", type=float, default=10.0)
+    p.add_argument("--cp-bonus", type=float, default=10.0)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--steps", type=float, default=1e6)
     p.add_argument("--logdir", type=str, default=None)
@@ -88,7 +89,7 @@ def main():
                 v = float(v) if v not in (None, "") else 0.0
                 offsets[k] = v if isinstance(offsets[k], float) else int(v)
     print(f"Offsets de reanudacion: {offsets}", flush=True)
-    cfg_record = {**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cmdline": sys.argv}
+    cfg_record = {**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cp_bonus": args.cp_bonus, "cmdline": sys.argv}
     if (logdir / "config.json").exists():
         with open(logdir / "resumes.jsonl", "a") as f:
             f.write(json.dumps({**cfg_record, "resumed_at": datetime.datetime.now().isoformat(), "offsets": offsets}, default=str) + "\n")
@@ -101,6 +102,15 @@ def main():
     train_eps = tools.load_episodes(config.traindir, limit=config.dataset_size)
     t_start = time.time()
     holder = {"agent": None, "ep": 0}
+    if csv_path.exists():
+        with open(csv_path, newline="") as f:
+            old_rows = list(csv.DictReader(f))
+            old_fields = list(old_rows[0].keys()) if old_rows else None
+        if old_fields is not None and old_fields != CSV_FIELDS:
+            with open(csv_path, "w", newline="") as f:
+                w0 = csv.DictWriter(f, fieldnames=CSV_FIELDS, extrasaction="ignore", restval="")
+                w0.writeheader()
+                w0.writerows(old_rows)
     new = not csv_path.exists()
     csv_file = open(csv_path, "a", newline="")
     writer = csv.DictWriter(csv_file, fieldnames=CSV_FIELDS)
@@ -122,6 +132,7 @@ def main():
             "ep_len": length,
             "progress_m": info.get("progress_m"),
             "reason": info.get("reason"),
+            "cp_passed": info.get("cp_passed"),
             "lap_time_s": info.get("sim_time_s") if finished else None,
             "max_vram_gb": torch.cuda.max_memory_allocated() / 2**30,
         }
@@ -130,12 +141,13 @@ def main():
         jsonl.write(json.dumps(row) + "\n")
         jsonl.flush()
         logger.scalar("ep/progress_m", row["progress_m"] or 0.0)
+        logger.scalar("ep/cp_passed", row["cp_passed"] or 0)
         logger.scalar("ep/sim_hours", row["sim_hours"])
         logger.scalar("ep/wall_hours", row["wall_hours"])
         logger.scalar("ep/grad_steps", row["grad_steps"])
         logger.scalar("ep/finished", 1.0 if finished else 0.0)
 
-    env = DreamerTMNF(port=args.port, time_limit=config.time_limit, on_episode=on_episode, speed=args.game_speed, fail_penalty=args.fail_penalty)
+    env = DreamerTMNF(port=args.port, time_limit=config.time_limit, on_episode=on_episode, speed=args.game_speed, fail_penalty=args.fail_penalty, cp_bonus=args.cp_bonus)
     train_envs = [Damy(env)]
     config.num_actions = env.action_space.shape[0]
 

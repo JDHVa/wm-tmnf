@@ -130,7 +130,7 @@ def replay(env, client, s0, data, args):
                 vd = f"{vd_val:.6f}"
                 sr = f"{float(stored_reward[t]):.6f}"
                 max_div = max(max_div, vd_val)
-                if divergence_step is None and vd_val > DIVERGENCE_TOL:
+                if divergence_step is None and abs(r - float(stored_reward[t])) > DIVERGENCE_TOL:
                     divergence_step = t
             x, y, z = st.position
             w.writerow([t, st.race_time, f"{x:.3f}", f"{y:.3f}", f"{z:.3f}", f"{st.speed_kmh:.2f}",
@@ -169,10 +169,10 @@ def replay(env, client, s0, data, args):
               f"velocidad: {last_info['speed_kmh']:.1f} km/h")
     print(f"recompensa total replay: {total_reward:.3f} vs original (npz): {orig_total:.3f}")
     if divergence_step is None:
-        print(f"divergencia vector: max {max_div:.2e}, sin pasos con diff > {DIVERGENCE_TOL}")
+        print(f"divergencia vector: max {max_div:.2e}; recompensa sin pasos con diff > {DIVERGENCE_TOL}")
     else:
-        print(f"divergencia vector: primer paso con diff > {DIVERGENCE_TOL}: {divergence_step} "
-              f"(max {max_div:.4f})")
+        print(f"divergencia recompensa: primer paso con diff > {DIVERGENCE_TOL}: {divergence_step} "
+              f"(vec_diff max {max_div:.4f})")
     v = verdict(events, divergence_step, T - 1, steps_done, states, total_cp)
     print(f"veredicto: {v}")
     print(f"csv: {out}")
@@ -214,7 +214,8 @@ def main():
               f"vel={tuple(round(v, 3) for v in s0.velocity)}")
         print(f"CP totales del mapa: cp_states_length={s0.raw.cp_data.cp_states_length} "
               f"cp_times_length={s0.raw.cp_data.cp_times_length}")
-        env = TMNFEnv(port=args.port, speed=args.speed, fail_penalty=args.fail_penalty, client=client)
+        env = TMNFEnv(port=args.port, speed=args.speed, fail_penalty=args.fail_penalty, client=client,
+                     cp_path="", cp_bonus=0.0)
         env.s0 = s0
         replay(env, client, s0, data, args)
     finally:

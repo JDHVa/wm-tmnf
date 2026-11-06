@@ -1,0 +1,12 @@
+{
+ "warm_start_from": "runs/dreamer/2026-10-29_ent3e-3_fp10",
+ "at_env_steps": 170924,
+ "reason": "Recompensa cambia: bono por checkpoint real y fin de episodio missed_cp. El replay de ep 471 mostro cp_states=100 al cruzar el arco final.",
+ "seed": 0,
+ "cp_vcp": [
+  119.763,
+  177.604
+ ],
+ "cp_margin": 3.0,
+ "buffer_relabel": "41 episodios recortados en el primer paso con avance acumulado > 180.60 VCP, con -10 y terminal, asumiendo que ninguno tomo el CP2. Sin bono de CP retroactivo."
+}

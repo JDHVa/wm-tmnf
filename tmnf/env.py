@@ -43,7 +43,7 @@ class TMNFEnv(gym.Env):
                  speed=20.0, img_size=64, capture_size=128, lookahead=(1, 2, 3, 5, 8, 12, 16),
                  max_time_ms=60000, stuck_speed_kmh=5.0, stuck_ms=2000, grace_ms=1500,
                  max_lateral_m=30.0, step_penalty=0.01, finish_bonus=10.0, fail_penalty=1.0,
-                 render_mode=None, client=None):
+                 render_mode=None, client=None, cp_bonus=10.0, cp_path="data/vcp/A01_cp.npy", cp_margin=3.0):
         super().__init__()
         self.port = port
         self.map_path = map_path
@@ -61,6 +61,13 @@ class TMNFEnv(gym.Env):
         self.finish_bonus = finish_bonus
         self.fail_penalty = fail_penalty
         self.render_mode = render_mode
+        self.cp_bonus = cp_bonus
+        self.cp_margin = cp_margin
+        cpp = cp_path if (not cp_path or os.path.isabs(cp_path)) else os.path.join(ROOT, cp_path)
+        if cpp and os.path.exists(cpp):
+            self.cp_idx = tuple(sorted(float(v) for v in np.atleast_1d(np.load(cpp))))
+        else:
+            self.cp_idx = ()
         vp = vcp_path if os.path.isabs(vcp_path) else os.path.join(ROOT, vcp_path)
         self.vcp = np.load(vp).astype(np.float64)
         self.vcp_len_m = float(np.linalg.norm(np.diff(self.vcp, axis=0), axis=1).sum())
@@ -86,6 +93,7 @@ class TMNFEnv(gym.Env):
         self.t_now = 0
         self.cp_seen = 0
         self.ep_steps = 0
+        self.cp_passed = 0
 
     def _connect(self):
         if self.client is None:
@@ -125,6 +133,7 @@ class TMNFEnv(gym.Env):
             cp=self.client.last_cp,
             finished=finished,
             reason=reason,
+            cp_passed=self.cp_passed,
             total_env_steps=self.total_env_steps,
             total_sim_ms=self.total_sim_ms,
         )
@@ -169,6 +178,8 @@ class TMNFEnv(gym.Env):
             if a == b:
                 finished = True
                 c.prevent_simulation_finish()
+        cd = st.raw.cp_data
+        passed = sum(1 for i in range(int(cd.cp_states_length)) if cd.cp_states[i])
         pos = np.asarray(st.position)
         idx, p = progress(pos, self.vcp, self.last_idx)
         self.last_idx = idx
@@ -176,6 +187,11 @@ class TMNFEnv(gym.Env):
         gain = max(0.0, p - self.max_progress)
         self.max_progress = max(self.max_progress, p)
         reward = gain - self.step_penalty
+        if not finished and passed > self.cp_passed:
+            reward += self.cp_bonus * (passed - self.cp_passed)
+        self.cp_passed = max(self.cp_passed, passed)
+        required = sum(1 for g in self.cp_idx if p > g + self.cp_margin)
+        missed = self.cp_passed < required
         elapsed = st.race_time - self.t_start
         if elapsed > self.grace_ms and st.speed_kmh < self.stuck_speed_kmh:
             self.stuck_t += t - t0
@@ -188,6 +204,9 @@ class TMNFEnv(gym.Env):
             reward += self.finish_bonus
         elif self.stuck_t >= self.stuck_ms:
             terminated, reason = True, "stuck"
+            reward -= self.fail_penalty
+        elif missed:
+            terminated, reason = True, "missed_cp"
             reward -= self.fail_penalty
         elif lateral > self.max_lateral_m:
             terminated, reason = True, "off_track"

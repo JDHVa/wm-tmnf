@@ -95,6 +95,8 @@ class TMIClient:
             if msg == MsgType.SC_CHECKPOINT_COUNT_CHANGED_SYNC:
                 self.last_cp = (a, b)
                 self.cp_events += 1
+                if a == b:
+                    self.prevent_simulation_finish()
             self._respond(msg)
         elif msg == MsgType.SC_ON_CONNECT_SYNC:
             self._respond(msg)
