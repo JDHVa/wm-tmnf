@@ -1,3 +1,4 @@
+import struct
 from dataclasses import dataclass
 
 import numpy as np
@@ -9,8 +10,9 @@ class _CP:
 
 
 class _Raw:
-    def __init__(self, R):
+    def __init__(self, R, data=b""):
         self.rotation_matrix = R
+        self.data = data
         self.cp_data = _CP()
 
 
@@ -80,14 +82,24 @@ class FakeClient:
 
     def get_state(self):
         fwd = np.array([np.sin(self.heading), 0.0, np.cos(self.heading)])
+        data = struct.pack("<i5d", int(self.t), float(self.pos[0]), float(self.pos[1]), float(self.pos[2]),
+                           float(self.heading), float(self.v))
         return FakeState(self.t, tuple(self.pos), tuple(fwd * self.v), self.v * 3.6,
-                         _Raw(self._R()), self.heading, self.v)
+                         _Raw(self._R(), data), self.heading, self.v)
+
+    def state_from_bytes(self, data):
+        t, x, y, z, heading, v = struct.unpack("<i5d", bytes(data))
+        fwd = np.array([np.sin(heading), 0.0, np.cos(heading)])
+        c, s = np.cos(heading), np.sin(heading)
+        R = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+        return FakeState(t, (x, y, z), tuple(fwd * v), v * 3.6, _Raw(R, bytes(data)), heading, v)
 
     def rewind_to_state(self, state):
-        self.t = state.race_time
-        self.pos = np.array(state.position, dtype=np.float64)
-        self.heading = state.heading
-        self.v = state.speed
+        t, x, y, z, heading, v = struct.unpack("<i5d", bytes(state.raw.data))
+        self.t = t
+        self.pos = np.array([x, y, z], dtype=np.float64)
+        self.heading = heading
+        self.v = v
         self.finished = False
         self.last_cp = (0, 1)
 

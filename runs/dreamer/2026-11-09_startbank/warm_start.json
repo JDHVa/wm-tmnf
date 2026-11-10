@@ -1,0 +1,10 @@
+{
+ "warm_start_from": "runs/dreamer/2026-11-06_cpgate",
+ "at_env_steps": 252535,
+ "at_episode": 679,
+ "reason": "La politica colapso en una linea que se sale en ~1770 m sin tomar el CP2 (CP2 en 9 de 75 episodios, 0 de 12 al final; actor_entropy 0.3). Se agregan arranques desde un banco de estados propios (Go-Explore) y mas entropia del actor.",
+ "reward_changes": "ninguno: cp_bonus 10 y fail_penalty 10 igual que cpgate; train_eps se copia sin re-etiquetar",
+ "changes": {"start_prob": 0.5, "actor_entropy": "3e-3 -> 1e-2", "bank": {"bucket_m": 100, "per_bucket": 16, "frontier": 4, "snap_every_m": 25, "snap_confirm_m": 50}},
+ "comparable_metric": "ep/progress_full_m y filas con start_m == 0",
+ "seed": 0
+}

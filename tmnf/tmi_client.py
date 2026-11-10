@@ -44,6 +44,13 @@ class CarState:
     raw: SimStateData
 
 
+def state_from_bytes(data) -> CarState:
+    s = SimStateData(bytes(data))
+    s.cp_data.resize(CheckpointData.cp_states_field, s.cp_data.cp_states_length)
+    s.cp_data.resize(CheckpointData.cp_times_field, s.cp_data.cp_times_length)
+    return CarState(s.race_time, tuple(s.position), tuple(s.velocity), s.display_speed, s)
+
+
 class TMIClient:
     def __init__(self, port: int = 8478):
         self.port = port
@@ -138,10 +145,10 @@ class TMIClient:
     def get_state(self) -> CarState:
         self.sock.sendall(struct.pack("i", MsgType.C_GET_SIMULATION_STATE))
         n = self._read_int()
-        s = SimStateData(self._read_exact(n))
-        s.cp_data.resize(CheckpointData.cp_states_field, s.cp_data.cp_states_length)
-        s.cp_data.resize(CheckpointData.cp_times_field, s.cp_data.cp_times_length)
-        return CarState(s.race_time, tuple(s.position), tuple(s.velocity), s.display_speed, s)
+        return state_from_bytes(self._read_exact(n))
+
+    def state_from_bytes(self, data) -> CarState:
+        return state_from_bytes(data)
 
     def rewind_to_state(self, state: CarState):
         data = state.raw.data

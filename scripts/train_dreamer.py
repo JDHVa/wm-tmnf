@@ -22,12 +22,13 @@ import tools
 from parallel import Damy
 
 from dreamer_tmnf.wrapper import DreamerTMNF
+from tmnf.start_bank import StartBank
 from dreamer_tmnf import tb_video
 
 tb_video.install()
 
 CSV_FIELDS = ["episode", "total_env_steps", "sim_hours", "wall_hours", "grad_steps",
-              "ep_return", "ep_len", "progress_m", "reason", "cp_passed", "lap_time_s", "max_vram_gb"]
+              "ep_return", "ep_len", "progress_m", "start_m", "reason", "cp_passed", "lap_time_s", "max_vram_gb"]
 
 
 def load_config(remaining):
@@ -62,9 +63,16 @@ def main():
     p.add_argument("--steps", type=float, default=1e6)
     p.add_argument("--logdir", type=str, default=None)
     p.add_argument("--max_wall_s", type=float, default=0)
+    p.add_argument("--start-prob", type=float, default=0.0)
+    p.add_argument("--actor-entropy", type=float, default=None)
+    p.add_argument("--bank-bucket-m", type=float, default=100.0)
+    p.add_argument("--bank-per-bucket", type=int, default=16)
+    p.add_argument("--bank-frontier", type=int, default=4)
     args, remaining = p.parse_known_args()
     config = load_config(remaining)
     config.seed = args.seed
+    if args.actor_entropy is not None:
+        config.actor["entropy"] = args.actor_entropy
     config.steps = int(args.steps)
     stamp = datetime.datetime.now().strftime("%Y-%m-%d")
     logdir = pathlib.Path(args.logdir or ROOT / "runs" / "dreamer" / f"{stamp}_{args.seed}")
@@ -89,7 +97,10 @@ def main():
                 v = float(v) if v not in (None, "") else 0.0
                 offsets[k] = v if isinstance(offsets[k], float) else int(v)
     print(f"Offsets de reanudacion: {offsets}", flush=True)
-    cfg_record = {**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cp_bonus": args.cp_bonus, "cmdline": sys.argv}
+    cfg_record = {**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cp_bonus": args.cp_bonus,
+                  "start_prob": args.start_prob, "actor_entropy": config.actor["entropy"],
+                  "bank_bucket_m": args.bank_bucket_m, "bank_per_bucket": args.bank_per_bucket, "bank_frontier": args.bank_frontier,
+                  "cmdline": sys.argv}
     if (logdir / "config.json").exists():
         with open(logdir / "resumes.jsonl", "a") as f:
             f.write(json.dumps({**cfg_record, "resumed_at": datetime.datetime.now().isoformat(), "offsets": offsets}, default=str) + "\n")
@@ -102,6 +113,10 @@ def main():
     train_eps = tools.load_episodes(config.traindir, limit=config.dataset_size)
     t_start = time.time()
     holder = {"agent": None, "ep": 0}
+    bank = None
+    if args.start_prob > 0:
+        bank = StartBank.load(logdir / "start_bank.pkl", bucket_m=args.bank_bucket_m,
+                              per_bucket=args.bank_per_bucket, frontier=args.bank_frontier, seed=args.seed)
     if csv_path.exists():
         with open(csv_path, newline="") as f:
             old_rows = list(csv.DictReader(f))
@@ -131,6 +146,7 @@ def main():
             "ep_return": ret,
             "ep_len": length,
             "progress_m": info.get("progress_m"),
+            "start_m": info.get("start_m"),
             "reason": info.get("reason"),
             "cp_passed": info.get("cp_passed"),
             "lap_time_s": info.get("sim_time_s") if finished else None,
@@ -141,13 +157,20 @@ def main():
         jsonl.write(json.dumps(row) + "\n")
         jsonl.flush()
         logger.scalar("ep/progress_m", row["progress_m"] or 0.0)
+        logger.scalar("ep/start_m", row["start_m"] or 0.0)
+        if not row["start_m"]:
+            logger.scalar("ep/progress_full_m", row["progress_m"] or 0.0)
+        if bank is not None and holder["ep"] % 10 == 0:
+            bank.save(logdir / "start_bank.pkl")
+            print(f"banco: {len(bank)} {bank.summary()}", flush=True)
         logger.scalar("ep/cp_passed", row["cp_passed"] or 0)
         logger.scalar("ep/sim_hours", row["sim_hours"])
         logger.scalar("ep/wall_hours", row["wall_hours"])
         logger.scalar("ep/grad_steps", row["grad_steps"])
         logger.scalar("ep/finished", 1.0 if finished else 0.0)
 
-    env = DreamerTMNF(port=args.port, time_limit=config.time_limit, on_episode=on_episode, speed=args.game_speed, fail_penalty=args.fail_penalty, cp_bonus=args.cp_bonus)
+    env = DreamerTMNF(port=args.port, time_limit=config.time_limit, on_episode=on_episode, speed=args.game_speed, fail_penalty=args.fail_penalty, cp_bonus=args.cp_bonus,
+                      start_bank=bank, start_prob=args.start_prob, start_seed=args.seed)
     train_envs = [Damy(env)]
     config.num_actions = env.action_space.shape[0]
 
@@ -185,6 +208,8 @@ def main():
                     "optims_state_dict": tools.recursively_collect_optim_state_dict(agent),
                     "update_count": agent._update_count},
                    logdir / "latest.pt")
+        if bank is not None:
+            bank.save(logdir / "start_bank.pkl")
         if args.max_wall_s and time.time() - t_start > args.max_wall_s:
             break
     env.close()

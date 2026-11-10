@@ -5,9 +5,10 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
-from .episode import rewind_checked
+from .episode import POS_TOL, rewind_checked
 from .game import ensure_game
 from .reference_line import lateral_distance, progress
+from .start_bank import state_from_entry
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -43,7 +44,8 @@ class TMNFEnv(gym.Env):
                  speed=20.0, img_size=64, capture_size=128, lookahead=(1, 2, 3, 5, 8, 12, 16),
                  max_time_ms=60000, stuck_speed_kmh=5.0, stuck_ms=2000, grace_ms=1500,
                  max_lateral_m=30.0, step_penalty=0.01, finish_bonus=10.0, fail_penalty=1.0,
-                 render_mode=None, client=None, cp_bonus=10.0, cp_path="data/vcp/A01_cp.npy", cp_margin=3.0):
+                 render_mode=None, client=None, cp_bonus=10.0, cp_path="data/vcp/A01_cp.npy", cp_margin=3.0,
+                 start_bank=None, start_prob=0.0, snap_every_m=25.0, snap_confirm_m=50.0, start_seed=0):
         super().__init__()
         self.port = port
         self.map_path = map_path
@@ -72,6 +74,11 @@ class TMNFEnv(gym.Env):
         self.vcp = np.load(vp).astype(np.float64)
         self.vcp_len_m = float(np.linalg.norm(np.diff(self.vcp, axis=0), axis=1).sum())
         self.seg_m = self.vcp_len_m / (len(self.vcp) - 1)
+        self.start_bank = start_bank
+        self.start_prob = start_prob
+        self.snap_every_m = snap_every_m
+        self.snap_confirm_m = snap_confirm_m
+        self.start_rng = np.random.default_rng(start_seed)
         self.client = client
         self.s0 = None
         self.action_space = spaces.Discrete(len(ACTIONS))
@@ -94,6 +101,9 @@ class TMNFEnv(gym.Env):
         self.cp_seen = 0
         self.ep_steps = 0
         self.cp_passed = 0
+        self.start_m = 0.0
+        self._pending = []
+        self._next_snap_m = self.snap_every_m
 
     def _connect(self):
         if self.client is None:
@@ -128,6 +138,7 @@ class TMNFEnv(gym.Env):
             sim_time_s=(st.race_time - self.t_start) / 1000.0,
             progress=float(self.max_progress),
             progress_m=float(self.max_progress * self.seg_m),
+            start_m=float(self.start_m),
             lateral_m=float(lateral),
             speed_kmh=float(st.speed_kmh),
             cp=self.client.last_cp,
@@ -142,7 +153,17 @@ class TMNFEnv(gym.Env):
         super().reset(seed=seed)
         if self.client is None or self.s0 is None:
             self._connect()
-        rewind_checked(self.client, self.s0)
+        entry = None
+        bank = self.start_bank
+        if bank is not None and len(bank) > 0 and self.start_rng.random() < self.start_prob:
+            entry = bank.sample()
+            if entry is not None:
+                _, diff = rewind_checked(self.client, state_from_entry(entry, self.client))
+                if diff is None or diff > POS_TOL:
+                    bank.remove(entry)
+                    entry = None
+        if entry is None:
+            rewind_checked(self.client, self.s0)
         self.client.set_input()
         self.client.set_speed(self.speed)
         self._reset_episode_state()
@@ -151,9 +172,20 @@ class TMNFEnv(gym.Env):
         self.t_start = st.race_time
         self.t_now = st.race_time
         pos = np.asarray(st.position)
-        idx, p = progress(pos, self.vcp, 0)
-        self.last_idx = idx
-        self.max_progress = p
+        if entry is None:
+            idx, p = progress(pos, self.vcp, 0)
+            self.last_idx = idx
+            self.max_progress = p
+        else:
+            idx = int(entry["last_idx"])
+            self.last_idx = idx
+            self.max_progress = float(entry["max_progress"])
+            self.cp_passed = int(entry["cp_passed"])
+            self.start_m = float(entry["progress_m"])
+            step = self.snap_every_m
+            self._next_snap_m = float(np.ceil(self.start_m / step) * step) if step > 0 else 0.0
+            if self._next_snap_m <= self.start_m:
+                self._next_snap_m += step
         lateral = lateral_distance(pos, self.vcp, idx)
         obs = self._obs(st)
         return obs, self._info(st, lateral, None, False)
@@ -214,8 +246,28 @@ class TMNFEnv(gym.Env):
         truncated = (not terminated) and elapsed >= self.max_time_ms
         if truncated:
             reason = "timeout"
+        self._snapshots(st, terminated, finished)
         obs = self._obs(st)
         return obs, float(reward), terminated, truncated, self._info(st, lateral, reason, finished)
+
+    def _snapshots(self, st, terminated, finished):
+        bank = self.start_bank
+        if bank is None:
+            return
+        prog_m = self.max_progress * self.seg_m
+        if not terminated and prog_m >= self._next_snap_m:
+            self._pending.append(dict(data=bytes(st.raw.data), last_idx=int(self.last_idx),
+                                      max_progress=float(self.max_progress), cp_passed=int(self.cp_passed),
+                                      progress_m=float(prog_m)))
+            while self._next_snap_m <= prog_m:
+                self._next_snap_m += self.snap_every_m
+        keep = []
+        for e in self._pending:
+            if finished or e["progress_m"] + self.snap_confirm_m <= prog_m:
+                bank.add(e)
+            else:
+                keep.append(e)
+        self._pending = keep
 
     def render(self):
         return self.last_full_frame
