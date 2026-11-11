@@ -1,0 +1,59 @@
+{
+ "npz": "C:\\Users\\jesus\\Yo\\Proyectos\\mind-snn\\results\\mejor_vuelta_28.75s.npz",
+ "logdir": "C:\\Users\\jesus\\Yo\\Proyectos\\mind-snn\\runs\\dreamer\\2026-11-09_startbank",
+ "update_count": 30000,
+ "horizon": 60,
+ "starts": [
+  40,
+  135,
+  230,
+  325,
+  420,
+  515
+ ],
+ "sample": false,
+ "seed": 0,
+ "interp": "lanczos",
+ "hd": "results/mejor_vuelta_28.75s_hd.npz",
+ "metric_every": 5,
+ "metric_n": 103,
+ "recon_mse_posterior": 0.0028072127606719732,
+ "fecha": "2026-11-10T22:13:03",
+ "video": {
+  "path": "C:\\Users\\jesus\\Yo\\Proyectos\\mind-snn\\results/prediccion_mejor_vuelta_28.75s_hd\\prediccion.mp4",
+  "frames": 1100,
+  "fps": 20,
+  "segundos": 55.0,
+  "codec": "H.264 (ffmpeg)"
+ },
+ "metricas": {
+  "0.5s": {
+   "mse_modelo": 0.007819080725312233,
+   "psnr_modelo": 22.308300018310547,
+   "mse_copia": 0.05076785758137703,
+   "psnr_copia": 13.544949531555176,
+   "err_vel_kmh": 12.54535961151123
+  },
+  "1s": {
+   "mse_modelo": 0.014274097979068756,
+   "psnr_modelo": 19.89435577392578,
+   "mse_copia": 0.05916765704751015,
+   "psnr_copia": 12.60745620727539,
+   "err_vel_kmh": 15.377886772155762
+  },
+  "2s": {
+   "mse_modelo": 0.025669723749160767,
+   "psnr_modelo": 17.563379287719727,
+   "mse_copia": 0.07118453085422516,
+   "psnr_copia": 11.738290786743164,
+   "err_vel_kmh": 25.757949829101562
+  },
+  "3s": {
+   "mse_modelo": 0.03965329751372337,
+   "psnr_modelo": 15.618609428405762,
+   "mse_copia": 0.07445588707923889,
+   "psnr_copia": 11.53632926940918,
+   "err_vel_kmh": 43.25457763671875
+  }
+ }
+}

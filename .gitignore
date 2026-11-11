@@ -9,3 +9,4 @@ virustotal.png
 *.pt
 .vscode/
 .idea/
+results/*_hd.npz

@@ -11,7 +11,6 @@ DREAMER_DIR = ROOT / "third_party" / "dreamerv3-torch"
 sys.path.insert(0, str(DREAMER_DIR))
 sys.path.insert(0, str(ROOT))
 
-import ruamel.yaml as yaml
 import torch
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
@@ -21,6 +20,7 @@ import dreamer as dreamer_mod
 import tools
 from parallel import Damy
 
+from dreamer_tmnf.load import load_config
 from dreamer_tmnf.wrapper import DreamerTMNF
 from tmnf.start_bank import StartBank
 from dreamer_tmnf import tb_video
@@ -29,28 +29,6 @@ tb_video.install()
 
 CSV_FIELDS = ["episode", "total_env_steps", "sim_hours", "wall_hours", "grad_steps",
               "ep_return", "ep_len", "progress_m", "start_m", "reason", "cp_passed", "lap_time_s", "max_vram_gb"]
-
-
-def load_config(remaining):
-    loader = yaml.YAML(typ="safe")
-    configs = loader.load((DREAMER_DIR / "configs.yaml").read_text())
-    configs.update(loader.load((ROOT / "dreamer_tmnf" / "configs_tmnf.yaml").read_text()))
-
-    def rec(base, update):
-        for k, v in update.items():
-            if isinstance(v, dict) and k in base:
-                rec(base[k], v)
-            else:
-                base[k] = v
-
-    defaults = {}
-    for name in ["defaults", "tmnf"]:
-        rec(defaults, configs[name])
-    parser = argparse.ArgumentParser()
-    for key, value in sorted(defaults.items(), key=lambda x: x[0]):
-        t = tools.args_type(value)
-        parser.add_argument(f"--{key}", type=t, default=t(value))
-    return parser.parse_args(remaining)
 
 
 def main():
