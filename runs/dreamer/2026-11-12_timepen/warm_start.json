@@ -1,0 +1,26 @@
+{
+ "warm_start_from": "runs/dreamer/2026-11-09_startbank",
+ "at_env_steps": 1006231,
+ "at_episode": 2842,
+ "reason": "La politica se estanco en ~28.7-29.2 s (98% de vueltas terminadas, vueltas identicas de 28.75 s). Se aumenta la presion por tiempo.",
+ "reward_changes": "step_penalty 0.01 -> 0.1 por paso de 50 ms (equivale a -2 por segundo de vuelta; en una vuelta completa es un bono por tiempo denso). train_eps re-etiquetado exacto: reward[1:] -= 0.09. ep_return de filas anteriores en episodes.csv usa la recompensa vieja.",
+ "changes": {
+  "step_penalty": [
+   0.01,
+   0.1
+  ],
+  "steps_limit": 3000000
+ },
+ "unchanged": {
+  "cp_bonus": 10,
+  "fail_penalty": 10,
+  "finish_bonus": 10,
+  "start_prob": 0.5,
+  "actor_entropy": 0.01,
+  "bank_frontier": 7
+ },
+ "relabeled_episodes": 2846,
+ "relabeled_steps": 1004878,
+ "comparable_metric": "lap_time_s en filas con start_m == 0",
+ "seed": 0
+}

@@ -37,6 +37,7 @@ def main():
     p.add_argument("--game-speed", type=float, default=5.0)
     p.add_argument("--fail-penalty", type=float, default=10.0)
     p.add_argument("--cp-bonus", type=float, default=10.0)
+    p.add_argument("--step-penalty", type=float, default=0.01)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--steps", type=float, default=1e6)
     p.add_argument("--logdir", type=str, default=None)
@@ -75,7 +76,7 @@ def main():
                 v = float(v) if v not in (None, "") else 0.0
                 offsets[k] = v if isinstance(offsets[k], float) else int(v)
     print(f"Offsets de reanudacion: {offsets}", flush=True)
-    cfg_record = {**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cp_bonus": args.cp_bonus,
+    cfg_record = {**vars(config), "port": args.port, "game_speed": args.game_speed, "fail_penalty": args.fail_penalty, "cp_bonus": args.cp_bonus, "step_penalty": args.step_penalty,
                   "start_prob": args.start_prob, "actor_entropy": config.actor["entropy"],
                   "bank_bucket_m": args.bank_bucket_m, "bank_per_bucket": args.bank_per_bucket, "bank_frontier": args.bank_frontier,
                   "cmdline": sys.argv}
@@ -147,7 +148,7 @@ def main():
         logger.scalar("ep/grad_steps", row["grad_steps"])
         logger.scalar("ep/finished", 1.0 if finished else 0.0)
 
-    env = DreamerTMNF(port=args.port, time_limit=config.time_limit, on_episode=on_episode, speed=args.game_speed, fail_penalty=args.fail_penalty, cp_bonus=args.cp_bonus,
+    env = DreamerTMNF(port=args.port, time_limit=config.time_limit, on_episode=on_episode, speed=args.game_speed, fail_penalty=args.fail_penalty, cp_bonus=args.cp_bonus, step_penalty=args.step_penalty,
                       start_bank=bank, start_prob=args.start_prob, start_seed=args.seed)
     train_envs = [Damy(env)]
     config.num_actions = env.action_space.shape[0]
